@@ -1,5 +1,4 @@
-FROM ubuntu:latest
-WORKDIR /app
+FROM nginx:alpine
+WORKDIR /usr/share/nginx/html
 COPY . . 
-RUN apt update -y
-RUN apt install -y docker.io git nginx tree
+CMD ["nginx", "-g", "daemon off;"]
