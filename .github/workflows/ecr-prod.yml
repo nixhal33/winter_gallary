@@ -26,7 +26,7 @@ jobs:
 
         - name: Build and push the docker images to ECR registry in AWS
           run: |
-            $TAG=${{ github.ref_name }}
+            TAG=${{ github.ref_name }}
             docker build -t photography .
             docker tag photography ${{ secrets.AWS_ECR_REPO_URL }}/photography:$TAG
             docker push ${{ secrets.AWS_ECR_REPO_URL }}/photography:$TAG
