@@ -51,7 +51,7 @@ jobs:
                 version: '3.8'
                 services:
                   gallary-webapp:
-                    image: winter_gallary
+                    image: ${{ secrets.AWS_ECR_REPO_URL }}/winter_gallary:latest
                     container_name: my-foto-gallary
                     ports:
                       - "81:80"
