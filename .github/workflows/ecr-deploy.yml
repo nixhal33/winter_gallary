@@ -1,4 +1,4 @@
-name: push docker images 
+name: Deploy An Application using Checkout--->Login into ECR--->Build Image & Push it into ECR--->Deploy to Targeted Server
 
 on:
   push:
@@ -30,3 +30,39 @@ jobs:
             docker build -t winter_gallary .
             docker tag winter_gallary ${{ secrets.AWS_ECR_REPO_URL }}/winter_gallary:$BRANCH_NAME
             docker push ${{ secrets.AWS_ECR_REPO_URL }}/winter_gallary:$BRANCH_NAME
+
+        - name: Deploy to server
+          uses: appleboy/ssh-action@v1
+          with:
+            host: ${{ secrets.SERVER_HOST }}
+            username: ${{ secrets.SERVER_USER }}
+            key: ${{ secrets.SERVER_PSSH_KEY }}
+            options: "-o StrictHostKeyChecking=no"
+            script: |
+
+                aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{ secrets.AWS_ECR_REPO_URL }}
+
+                # Create a directory named ecom-webapp and cd into that directory and write this docker-compose file below 
+
+                mkdir /home/ubuntu/winter_gallary && cd /home/ubuntu/winter_gallary
+
+                # Create docker-compose.yml using cat with EOF
+                cat > docker-compose.yml << 'EOF'
+                version: '3.8'
+                services:
+                  gallary-webapp:
+                    image: winter_gallary:main
+                    container_name: my-foto-gallary
+                    ports:
+                      - "81:80"
+                    restart: always
+                EOF
+      
+                # Pull the docker images
+                docker compose pull
+                
+                # Turn down the previous deployment
+                docker compose down
+                
+                # Start the docker compose file/Start the deployement
+                docker compose up -d
