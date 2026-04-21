@@ -1,0 +1,32 @@
+name: push docker images 
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+        steps:
+        - name: Checkout Repo
+          uses: actions/checkout@v3
+        
+        - name: Configure AWS Credentials
+          uses: aws-actions/configure-aws-credentials@v6.1.0
+          with:
+            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            aws-region: us-east-1
+                  
+        - name: Log into the elastic container registry(ECR)
+          run: |
+            aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{ secrets.AWS_ECR_REPO_URL }}
+
+        - name: Build and push the docker images to ECR registry in AWS
+          run: |
+            BRANCH_NAME=${{ github.ref_name }}
+            docker build -t winter_gallary .
+            docker tag winter_gallary ${{ secrets.AWS_ECR_REPO_URL }}/winter_gallary:$BRANCH_NAME
+            docker push ${{ secrets.AWS_ECR_REPO_URL }}/winter_gallary:$BRANCH_NAME
